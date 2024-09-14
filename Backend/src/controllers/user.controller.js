@@ -371,6 +371,83 @@ const updateUserAvatar = asyncHandler( async (req, res) => {
 
 } );
 
+// Get user channel profile 
+const getUserChannelProfile = asyncHandler( async (req, res) => {
+    const { username } = req.params;
+
+    // Validate 
+    if (!username?.trim()) {
+        throw new apiError(400, "Username is missing");
+    } 
+
+    // Find the user 
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                subscribedToCount: {
+                    $size: "$subscribeedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: {$in: [req.user?._id, "$subscribers._id"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullname: 1,
+                username: 1,
+                avatar: 1,
+                subscribersCount: 1,
+                subscribedToCount: 1,
+                isSubscribed: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+    ]);
+    console.log("channel: ", channel);
+
+    // Validate 
+    if (!channel?.length) {
+        throw new apiError(404, "Channel not found");
+    }
+
+    // Return response
+    return res.status(200)
+    .json(
+        new apiResponse(200, channel[0], "Channel fetched successfully")
+    );
+
+} );
+
 export { 
     registerUser,
     loginUser,
@@ -379,5 +456,6 @@ export {
     changeCurrentPassword,
     getCurrentUser,
     updateAccountDetails,
-    updateUserAvatar
+    updateUserAvatar,
+    getUserChannelProfile,
  };
