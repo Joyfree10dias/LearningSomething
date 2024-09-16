@@ -15,7 +15,7 @@ const connectToGEMINI = async (model = "gemini-1.5-flash") => {
                 maxOutputTokens: 1024,
             }
         });
-        console.log("Connected to Gemini");
+        console.log("Connected to Gemini: ", geminiModel.model, "\n");
         return geminiModel;
     } catch (error) {
         throw new error;
