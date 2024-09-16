@@ -1,0 +1,26 @@
+{
+  "name": "gemini",
+  "version": "1.0.0",
+  "description": "Testing Gemini AI",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
+  },
+  "keywords": [
+    "Gemini",
+    "AI",
+    "JavaScript"
+  ],
+  "author": "Joyfree Dias",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.19.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
