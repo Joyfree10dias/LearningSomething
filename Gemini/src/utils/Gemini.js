@@ -1,10 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"; 
-import { geminiResponseSchema } from "../constants.js";
+// import { geminiResponseSchema } from "../constants.js";
+import { generativeAI } from "../index.js";
 
 // Connect to Gemini 
 const connectToGEMINI = async (model = "gemini-1.5-flash") => {
     try {
-        const generativeAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
         const geminiModel = generativeAI.getGenerativeModel({
             model,
             generationConfig: {
@@ -15,7 +14,8 @@ const connectToGEMINI = async (model = "gemini-1.5-flash") => {
                 maxOutputTokens: 1024,
             }
         });
-        console.log("Connected to Gemini: ", geminiModel.model, "\n");
+        console.log("Connected to Gemini AI");
+        console.log("Gemini Model: ", geminiModel.model, "\n");
         return geminiModel;
     } catch (error) {
         throw new error;

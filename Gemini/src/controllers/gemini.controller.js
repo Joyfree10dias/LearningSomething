@@ -1,6 +1,7 @@
 import { GeminiModels } from "../constants.js";
 import { connectToGEMINI } from "../utils/Gemini.js";
-import readline, { Interface } from "readline";
+import readline from "readline";
+import fs from "fs";
 
 // Create a readline interface 
 const rl = readline.createInterface({
@@ -8,6 +9,16 @@ const rl = readline.createInterface({
     output: process.stdout,
     output: null
 })
+
+// convert file to generative part 
+function fileToGenerativePart(path, mimeType) {
+    return {
+      inlineData: {
+        data: Buffer.from(fs.readFileSync(path)).toString("base64"),
+        mimeType,
+      },
+    };
+}
 
 // for '/' path 
 const defaultCall = async (req, res) => {
@@ -23,7 +34,7 @@ const defaultCall = async (req, res) => {
 // Using generateContent 
 const useGenerateContent = async (req, res) => {
     try {
-        const { model, propmt } = req.body;
+        const { model, prompt } = req.body;
 
         // Verify if the model exists 
         if (!GeminiModels[req.body.model]) {
@@ -32,7 +43,7 @@ const useGenerateContent = async (req, res) => {
 
         // Connect to Gemini 
         const geminiModel = await connectToGEMINI(model);
-        const prompt = "write a code for adding two numbers in javascript";
+        console.log("Prompt: ", prompt);
         const response = await geminiModel.generateContent(prompt);
         console.log("Response: ", response);
 
@@ -51,7 +62,7 @@ const useGenerateContent = async (req, res) => {
 // Using generateContentStream 
 const useGenerateContentStream = async (req, res) => {
     try {
-        const { model, propmt } = req.body;
+        const { model, prompt } = req.body;
 
         // Verify if the model exists 
         if (!GeminiModels[req.body.model]) {
@@ -59,7 +70,7 @@ const useGenerateContentStream = async (req, res) => {
         }
 
         const geminiModel = await connectToGEMINI(model);
-        const prompt = "write a long story about a dog";
+        console.log("Prompt: ", prompt);
         const response = await geminiModel.generateContentStream(prompt);
         console.log("Response: ", response);
         
@@ -119,10 +130,47 @@ const useGeminiChat = async (req, res) => {
     .send("You can chat with Gemini AI in terminal");
 };
 
+// Generate Content using text and pictures 
+const useGenerateContentWithImage = async (req, res) => {
+    const { model, prompt } = req.body;
+    const imagePath = req.file?.path;
+    console.log(imagePath);
+
+    // Verify if the model exists 
+    if (!GeminiModels[req.body.model]) {
+        return res.status(400).json({ error: "Invalid model" });
+    }
+
+    // Verify if the image exists 
+    if(!imagePath) {
+        return res.status(400).json({ error: "Image required"});
+    }
+
+    // Connect to Gemini 
+    const geminiModel = await connectToGEMINI(model);
+    console.log("Prompt: ", prompt);
+
+    const imagePart = fileToGenerativePart(imagePath, req.file?.mimetype);
+    const response = await geminiModel.generateContent([prompt, imagePart]);
+    console.log("Response: ", response);
+
+    // Extract the message from response
+    let message = response.response.text();
+    console.log("Message: ", message);
+
+    // Delete the uploaded file 
+    fs.unlinkSync(imagePath);
+
+    // Return response 
+    return res.status(200)
+    .json({ message });
+};
+
 export {
     defaultCall,
     useGenerateContent,
     useGenerateContentStream,
-    useGeminiChat
+    useGeminiChat,
+    useGenerateContentWithImage
 }
 
