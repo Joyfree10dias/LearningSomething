@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleAIFileManager } from "@google/generative-ai/server";
 // import { connectToGEMINI } from "./utils/Gemini.js";
 dotenv.config({
     path: "./.env"
@@ -8,6 +9,7 @@ import app from "./app.js";
 
 // Supply the API Key 
 const generativeAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+const fileManager = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API_KEY)
 
 try {
     // Start Server 
@@ -18,4 +20,7 @@ try {
     throw new error;
 }
 
-export { generativeAI };
+export {
+    generativeAI,
+    fileManager
+};

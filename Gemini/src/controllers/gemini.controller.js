@@ -1,5 +1,6 @@
 import { GeminiModels } from "../constants.js";
 import { connectToGEMINI } from "../utils/Gemini.js";
+import { uploadToGoogleFiles } from "../utils/googleFileManager.js";
 import readline from "readline";
 import fs from "fs";
 
@@ -166,11 +167,54 @@ const useGenerateContentWithImage = async (req, res) => {
     .json({ message });
 };
 
+
+// Genearte Content using files (PDF) 
+const useGenerateContentWithFile = async (req, res) => {
+    const { model, prompt } = req.body;
+    const imagePath = req.file?.path;
+
+    // Verify if the model exists 
+    if (!GeminiModels[req.body.model]) {
+        return res.status(400).json({ error: "Invalid model" });
+    }
+
+    // Verify if the file exists
+    if(!imagePath) {
+        return res.status(400).json({ error: "File required"});
+    }
+
+    // Upload to files 
+    const uploadResult = await uploadToGoogleFiles(imagePath, req.file?.mimetype, req.file?.orignalname);
+
+    const geminiModel = await connectToGEMINI(model);
+    console.log("Prompt: ", prompt);
+    const response = await geminiModel.generateContent([
+        prompt,
+        {
+            fileData: {
+                fileUri: uploadResult.file.uri,
+                mimeType: uploadResult.file.mimeType,
+            }
+        }
+    ]);
+    console.log("Response: ", response);
+
+    // Extract the message from response 
+    let message = response.response.text();
+    console.log("Message: ", message);
+
+    // Return response 
+    return res.status(200)
+    .json({ message });
+    
+};
+
 export {
     defaultCall,
     useGenerateContent,
     useGenerateContentStream,
     useGeminiChat,
-    useGenerateContentWithImage
+    useGenerateContentWithImage,
+    useGenerateContentWithFile
 }
 
