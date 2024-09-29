@@ -216,7 +216,7 @@ const useGenerateContentWithVideo = async (req, res) => {
     console.log(videoPath);
 
     // Verify if the model exists 
-    if (!GeminiModels[req.body.model]) {
+    if (!GeminiModels[model]) {
         return res.status(400).json({ error: "Invalid model" });
     }
 
@@ -259,6 +259,54 @@ const useGenerateContentWithVideo = async (req, res) => {
      
 };
 
+// Generate Content using text and audio 
+const useGenerateContentWithAudio = async (req, res) => {
+    const { model, prompt } = req.body;
+    const audioPath = req.file?.path;
+    console.log(audioPath);
+
+    // Verify if the model exists 
+    if (!GeminiModels[model]) {
+        return res.status(400).json({ error: "Invalid model" });
+    }
+
+    // Verify if the audio exists 
+    if(!audioPath) {
+        return res.status(400).json({ error: "Audio required"});
+    }
+
+    // Upload the audio to files 
+    const uploadResult = await uploadToGoogleFiles(audioPath, req.file?.mimetype, req.file?.orignalname);
+
+    if (!uploadResult) {
+        return res.status(500).json({ error: "Failed to upload audio" });
+    }
+
+    // Connect to Gemini 
+    const geminiModel = await connectToGEMINI(model);
+    console.log("Prompt: ", prompt);
+
+    const response = await geminiModel.generateContent([
+        prompt,
+        {
+            fileData: {
+                fileUri: uploadResult.file.uri,
+                mimeType: uploadResult.file.mimeType,
+            },
+        }
+    ]);
+    console.log("Response: ", response);
+
+    // Extract the message from response 
+    let message = response.response?.text();
+    console.log("Message: ", message);
+
+    // Return response 
+    return res.status(200)
+    .json({ message });
+    
+}
+
 export {
     defaultCall,
     useGenerateContent,
@@ -266,6 +314,7 @@ export {
     useGeminiChat,
     useGenerateContentWithImage,
     useGenerateContentWithFile,
-    useGenerateContentWithVideo
+    useGenerateContentWithVideo,
+    useGenerateContentWithAudio
 }
 

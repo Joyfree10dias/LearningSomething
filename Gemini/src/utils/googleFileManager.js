@@ -19,10 +19,12 @@ const uploadToGoogleFiles = async (localFilePath, mimeType, displayName) => {
         while(uploadResults.file.state == FileState.PROCESSING) {
             await new Promise(resolve => setTimeout(resolve, 5000));
             uploadResults.file = await fileManager.getFile(uploadResults.file.name);
-            // console.log("Upload Result: ", uploadResults);
+            console.log("Upload Result: ", uploadResults);
         }
 
-        if (uploadResults.state !== "ACTIVE") {
+        console.log("State: ", uploadResults.file.state);
+
+        if (uploadResults.file.state !== FileState.ACTIVE) {
             throw new Error("File upload failed");
         }
 

@@ -7,7 +7,8 @@ import {
     useGeminiChat,
     useGenerateContentWithImage ,
     useGenerateContentWithFile,
-    useGenerateContentWithVideo
+    useGenerateContentWithVideo,
+    useGenerateContentWithAudio
 } from "../controllers/gemini.controller.js"
 const router = Router();
 
@@ -27,6 +28,10 @@ router.route("/generate-content-with-file").post(
 router.route("/generate-content-with-video").post(
     upload.single("video"), 
     useGenerateContentWithVideo
+);
+router.route("/generate-content-with-audio").post(
+    upload.single("audio"), 
+    useGenerateContentWithAudio
 );
 
 export default router;
