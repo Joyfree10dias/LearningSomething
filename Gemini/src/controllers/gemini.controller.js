@@ -209,12 +209,63 @@ const useGenerateContentWithFile = async (req, res) => {
     
 };
 
+// Generate Content using text and video 
+const useGenerateContentWithVideo = async (req, res) => {
+    const { model, prompt } = req.body;
+    const videoPath = req.file?.path;
+    console.log(videoPath);
+
+    // Verify if the model exists 
+    if (!GeminiModels[req.body.model]) {
+        return res.status(400).json({ error: "Invalid model" });
+    }
+
+    // Verify if the video exists 
+    if(!videoPath) {
+        return res.status(400).json({ error: "Video required"});
+    }
+
+    // Upload the video to files 
+    const uploadResult = await uploadToGoogleFiles(videoPath, req.file?.mimetype, req.file?.orignalname);
+
+    if (!uploadResult) {
+        return res.status(500).json({ error: "Failed to upload video" });
+    }
+
+    // Connect to Gemini 
+    const geminiModel = await connectToGEMINI(model);
+    console.log("Prompt: ", prompt);
+
+    const response = await geminiModel.generateContent([
+        {
+            fileData: {
+                fileUri: uploadResult.file.uri,
+                mimeType: uploadResult.file.mimeType,
+            }
+        },
+        {
+            text: prompt,
+        },
+    ]);
+    console.log("Response: ", response);
+
+    // Extract the message from response 
+    let message = response.response?.text();
+    console.log("Message: ", message);
+
+    // Return response 
+    return res.status(200)
+    .json({ message });
+     
+};
+
 export {
     defaultCall,
     useGenerateContent,
     useGenerateContentStream,
     useGeminiChat,
     useGenerateContentWithImage,
-    useGenerateContentWithFile
+    useGenerateContentWithFile,
+    useGenerateContentWithVideo
 }
 
