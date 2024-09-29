@@ -305,7 +305,48 @@ const useGenerateContentWithAudio = async (req, res) => {
     return res.status(200)
     .json({ message });
     
-}
+};
+
+// Generate and Execute code 
+const useGenerateAndExecuteCode = async (req, res) => {
+    let { model, prompt } = req.body;
+
+    // Verify if the model exists 
+    if (!GeminiModels[model]) {
+        return res.status(400).json({ error: "Invalid model" });
+    }
+
+    // Connect to Gemini 
+    const geminiModel = await connectToGEMINI(model);
+    console.log("Prompt: ", prompt);
+
+    const response = await geminiModel.generateContent({
+        contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+        tools: [
+            {
+                codeExecution: {}
+            }
+        ]
+    });
+    console.log("Response: ", response);
+
+    // Extract the message from response 
+    let message = response.response?.text();
+    console.log("Message: ", message);
+
+    // Return response 
+    return res.status(200)
+    .json({ message });
+};
 
 export {
     defaultCall,
@@ -315,6 +356,7 @@ export {
     useGenerateContentWithImage,
     useGenerateContentWithFile,
     useGenerateContentWithVideo,
-    useGenerateContentWithAudio
+    useGenerateContentWithAudio,
+    useGenerateAndExecuteCode,
 }
 

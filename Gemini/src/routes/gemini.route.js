@@ -8,7 +8,8 @@ import {
     useGenerateContentWithImage ,
     useGenerateContentWithFile,
     useGenerateContentWithVideo,
-    useGenerateContentWithAudio
+    useGenerateContentWithAudio,
+    useGenerateAndExecuteCode,
 } from "../controllers/gemini.controller.js"
 const router = Router();
 
@@ -33,5 +34,6 @@ router.route("/generate-content-with-audio").post(
     upload.single("audio"), 
     useGenerateContentWithAudio
 );
+router.route("/generate-and-execute-code").post(useGenerateAndExecuteCode);
 
 export default router;
