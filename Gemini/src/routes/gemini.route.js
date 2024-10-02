@@ -10,6 +10,7 @@ import {
     useGenerateContentWithVideo,
     useGenerateContentWithAudio,
     useGenerateAndExecuteCode,
+    useSystemInstructions
 } from "../controllers/gemini.controller.js"
 const router = Router();
 
@@ -35,5 +36,6 @@ router.route("/generate-content-with-audio").post(
     useGenerateContentWithAudio
 );
 router.route("/generate-and-execute-code").post(useGenerateAndExecuteCode);
+router.route("/system-instructions").post(useSystemInstructions);
 
 export default router;

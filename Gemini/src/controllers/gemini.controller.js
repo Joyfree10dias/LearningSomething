@@ -348,6 +348,43 @@ const useGenerateAndExecuteCode = async (req, res) => {
     .json({ message });
 };
 
+// Generate Content using System Instructions 
+const useSystemInstructions = async (req, res) => {
+    const { model, prompt } = req.body;
+    console.log(req.body);
+
+    // Verify if the model exists 
+    if (!GeminiModels[model]) {
+        return res.status(400).json({ error: "Invalid model" });
+    }
+
+    // Connect to Gemini 
+    const geminiModel = await connectToGEMINI(model);
+    console.log("Prompt: ", prompt);
+
+    const response = await geminiModel.generateContent({
+        contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+        ],
+        systemInstruction: "You are a coding expert that specializes in Golang and your name is Goku"
+    });
+
+    // Extract the message from response 
+    let message = response.response?.text();
+    console.log("Message: ", message);
+
+    // Return response 
+    return res.status(200)
+    .json({ message });
+};
+
 export {
     defaultCall,
     useGenerateContent,
@@ -358,5 +395,6 @@ export {
     useGenerateContentWithVideo,
     useGenerateContentWithAudio,
     useGenerateAndExecuteCode,
+    useSystemInstructions,
 }
 
